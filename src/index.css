@@ -1,111 +1,192 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
+/* ==========================================
+   1. GLOBAL STYLES & LAYOUT CENTERING
+   ========================================== */
 body {
   margin: 0;
+  background-color: #1e1c24; /* Dark purple background */
+  color: #ffffff;
+  font-family: system-ui, -apple-system, sans-serif;
+  text-align: center;
 }
 
+/* Centering container for the site (width is locked for desktop presentation) */
 #root {
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Common container for pages */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 80vh;
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+.title {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 15px;
+}
+.title.lose { color: #ab2626; } /* Red for Lose screen */
+.title.win { color: #2ba245; }  /* Green for Win screen */
+
+.subtitle {
+  font-size: 16px;
+  color: #a5a2b5;
+  margin-bottom: 40px;
+  max-width: 500px;
+  line-height: 1.5;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
+/* ==========================================
+   2. BUTTONS
+   ========================================== */
+.btn {
+  background-color: #aa3bff; /* Primary Purple */
+  color: #ffffff;
+  border: none;
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
   border-radius: 4px;
-  color: var(--text-h);
+  text-decoration: none;
+  display: inline-block;
+  margin: 8px;
+  transition: opacity 0.2s;
+}
+.btn:hover {
+  opacity: 0.9;
+}
+.btn.danger { background-color: #ab2626; }
+.btn.secondary { background-color: #4b485a; }
+
+
+/* ==========================================
+   3. PLAYERS GRID (LOBBY & VIEW RESPONSES)
+   ========================================== */
+/* Grid for the Lobby */
+.lobby-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: 40px;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+.lobby-item {
+  background-color: #2b2836;
+  border: 1px solid #3c394c;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lobby-item.human {
+  border-color: #aa3bff; /* Highlight the human player */
+}
+
+/* Container for Player cards (3 top, 2 bottom) */
+.players-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  max-width: 950px;
+  margin: auto;
+  background-color: #2b2836;
+  padding: 40px 20px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.players-row {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* Individual Player Card */
+.player-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 260px;
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  background-color: #000000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-svg {
+  width: 28px;
+  height: 28px;
+  fill: #a5a2b5;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.player-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.player-random {
+  font-size: 14px;
+  color: #a5a2b5;
+  font-style: italic;
+}
+
+.voted-for {
+  font-size: 13px;
+  color: #c084fc;
+  font-weight: 500;
+}
+
+/* Empty white card boxes */
+.response-box {
+  background-color: #ffffff;
+  color: #1e1c24;
+  border-radius: 4px;
+  padding: 16px;
+  min-height: 120px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e4e7;
+  box-sizing: border-box;
+}
+
+.navigation-demo-bar {
+  margin-top: 40px;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
 }
