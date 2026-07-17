@@ -1,7 +1,15 @@
-import "./win-or-lose.css"
+import { Link } from "react-router-dom"
 
 export default function Win() {
   return (
-      <h1>You Win!</h1>
-    )
+    <div className="container">
+      <div className="title win">YOU WIN</div>
+      
+      <div>
+        <Link to="/lobby/view-responses" className="btn">
+          Play Again
+        </Link>
+      </div>
+    </div>
+  )
 }
