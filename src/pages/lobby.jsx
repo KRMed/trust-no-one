@@ -1,18 +1,14 @@
 import "./lobby.css"
+import { useState, useEffect } from "react";
+import { getResponses, getVotes } from '../lib/model'
 import icon from "/person.png"
 
-import { useEffect, useState, useRef } from "react"
-
 export default function Lobby() {
-  const finalResponse = useRef('');
 
-  const PHASES = {
-    RESPONDING: "responding",
-    INTERM: "between",
-    VOTING: "voting"
-  }
-  const [phase, setPhase] = useState(PHASES.RESPONDING);
-
+  const [responses, setResponses] = useState([]);
+  const [votes, setVotes] = useState([]);
+  const [question, setQuestion] = useState('');
+  const [phase, setPhase] = useState('question');
   const players = [
     { name:"[USER]"},
     { name:"[SOME AI #1]"},
@@ -20,6 +16,12 @@ export default function Lobby() {
     { name:"[SOME AI #3]"},
     { name:"[SOME AI #4]"}
   ];
+
+  const PHASES = {
+    RESPONDING: "responding",
+    INTERM: "between",
+    VOTING: "voting"
+  }
 
   useEffect(() => {
     if (phase !== PHASES.RESPONDING) return;
@@ -32,10 +34,14 @@ export default function Lobby() {
     return () => clearTimeout(timer);
   }, [phase]);
 
-  // function displayResult() {
-  //   console.log(finalResponse.current.value);
-  // }
+  async function submitAnswers(question) { //needs to be updated to take all quesitons
+    const responses = await getResponses(question);
+    const index = Math.floor(Math.random() * (responses.length + 1))
+    responses.splice(index, 0, { modelId: 'human', response: humanAnswer }) //at position index, add human response
 
+    setResponses(responses);
+    setPhase('voting');
+  }
   return (
       <div className="lobby">
         {players.map((player, idx) => {
@@ -59,4 +65,5 @@ export default function Lobby() {
         </div>
       </div>
     )
+}
 }
