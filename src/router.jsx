@@ -14,5 +14,6 @@ export const router = createBrowserRouter([
     { path: "/you-win", element: <Win />},
     { path: "/you-lose", element: <Lose />},
     { path: "/login", element: <LoginPage />},
-    { path: "/register", element: <RegisterPage />}
+    { path: "/register", element: <RegisterPage />},
+    { path: "/start-game", element: <StartGame /> }
 ]);
