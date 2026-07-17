@@ -1,11 +1,17 @@
 import "./lobby.css"
 import icon from "/person.png"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 
 export default function Lobby() {
-  const [response, setResponse] = useState(null);
-  const [voteTime, setVoteTime] = useState(false);
+  const finalResponse = useRef('');
+
+  const PHASES = {
+    RESPONDING: "responding",
+    INTERM: "between",
+    VOTING: "voting"
+  }
+  const [phase, setPhase] = useState(PHASES.RESPONDING);
 
   const players = [
     { name:"[USER]"},
@@ -16,12 +22,19 @@ export default function Lobby() {
   ];
 
   useEffect(() => {
-    setInterval(changeMode, 5000);
-  }, []);
+    if (phase !== PHASES.RESPONDING) return;
 
-  function changeMode() {
-    setVoteTime(true);
-  }
+    const timer = setTimeout(() => {
+      setPhase(PHASES.INTERM);
+      // displayResult();
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  // function displayResult() {
+  //   console.log(finalResponse.current.value);
+  // }
 
   return (
       <div className="lobby">
@@ -37,10 +50,12 @@ export default function Lobby() {
           <p>Hello! Prompt here...</p>
         </div>
         <div className="action">
-          {voteTime
-            ? <button>Continue to Vote</button>
-            : <textarea />
-          }
+          {phase === PHASES.RESPONDING && (
+            <textarea ref={finalResponse} />
+          )}
+          {phase === PHASES.INTERM && (
+            <button onClick={(e) => setPhase(PHASES.VOTING)}>Continue to Vote</button>
+          )}
         </div>
       </div>
     )
