@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import icon from "/person.png"
 
 export default function Lose() {
   const [showRationales, setShowRationales] = useState(false);
@@ -37,14 +38,6 @@ export default function Lose() {
     }
   ];
 
-  const AvatarIcon = () => (
-    <div className="avatar">
-      <svg className="avatar-svg" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-      </svg>
-    </div>
-  );
-
   if (showRationales) {
     return (
       <div className="container" style={{ justifyContent: "flex-start" }}>
@@ -57,7 +50,7 @@ export default function Lose() {
               {rationales.slice(0, 3).map((player) => (
                 <div className="player-card" key={player.id}>
                   <div className="player-header">
-                    <AvatarIcon />
+                    <img className="person-icon" src={icon} alt="Icon of a person." style={{ width: "44px", height: "44px", objectFit: "contain" }} />
                     <div className="player-info">
                       <div className="player-name">{player.name}</div>
                       <div className="player-random">{player.random}</div>
@@ -75,7 +68,7 @@ export default function Lose() {
               {rationales.slice(3, 5).map((player) => (
                 <div className="player-card" key={player.id}>
                   <div className="player-header">
-                    <AvatarIcon />
+                    <img className="person-icon" src={icon} alt="Icon of a person." style={{ width: "44px", height: "44px", objectFit: "contain" }} />
                     <div className="player-info">
                       <div className="player-name">{player.name}</div>
                       <div className="player-random">{player.random}</div>
