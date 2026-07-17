@@ -253,6 +253,7 @@ code {
   flex-direction: column;
   width: 300px;
   gap: 15px;
+  align-items: center;
 }
 
 .auth-card input {
@@ -261,15 +262,36 @@ code {
   background-color: white;
   border: 1px solid black;
   color: black;
-}
-
-.auth-card label {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  width: 280px;
 }
 
 .auth-link {
   text-align: center;
   color: black;
+}
+
+button{
+  background-color: rgb(235, 18, 18);
+  color: white;
+  border: 2px solid white;
+  cursor: pointer;
+  text-align: center;
+}
+button:hover{
+  background-color: rgb(203, 18, 18);
+}
+
+
+.loginpage button {
+  width: 140px;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 18px;
+}
+
+.auth-card .register-button {
+  width: 180px;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 18px;
 }

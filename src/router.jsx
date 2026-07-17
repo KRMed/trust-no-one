@@ -6,6 +6,7 @@ import Win from "./pages/win";
 import Lose from "./pages/lose";
 import LoginPage from './pages/login-page';
 import RegisterPage from './pages/register';
+import Leaderboard from './pages/leaderboard';
 
 export const router = createBrowserRouter([
     { path: "/", element: <LoginPage />},
@@ -15,5 +16,6 @@ export const router = createBrowserRouter([
     { path: "/you-lose", element: <Lose />},
     { path: "/login", element: <LoginPage />},
     { path: "/register", element: <RegisterPage />},
-    { path: "/start-game", element: <StartGame /> }
+    { path: "/leaderboard", element: <Leaderboard/>},
+    { path: "/start-game", element: <StartGame/>}
 ]);
