@@ -21,7 +21,7 @@ function RegisterPage() {
           <input type = "password" />
         </label>
 
-        <button>Create Account</button>
+        <button className="register-button">Create Account</button>
 
         <Link to="/login" className="auth-link">
            Go to Login
