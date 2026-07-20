@@ -1,47 +1,29 @@
-const SYSTEM_PROMPT = "You are an AI model playing a game, in this game there are AI models trying to find the human. Your response should sound like a human would respond, allowing for humanization to be present in your response as to not be obvious."
+import { supabase } from './supabase.js'
+
 export const MODELS = [
-  { id: 'llama-3.3', model: 'llama-3.3-70b-versatile' },
-  // { id: 'llama-4', model: 'meta-llama/llama-4-scout-17b-16e-instruct' },
-  { id: 'gpt-20b', model: 'openai/gpt-oss-20b' },
+  { id: 'gpt-20b', provider: 'groq', model: 'openai/gpt-oss-20b' },
+  { id: 'qwen', provider: 'groq', model: 'qwen/qwen3.6-27b' },
+  { id: 'llama-70b', provider: 'groq', model: 'llama-3.3-70b-versatile' },
+  { id: 'claude', provider: 'anthropic', model: 'claude-haiku-4-5' },
+  { id: 'gpt-120b', provider: 'groq', model: 'openai/gpt-oss-120b' },
 ]
 
-async function getGroq(prompt, model) {
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: [
-        {
-          role: 'system',
-          content: SYSTEM_PROMPT
-        },
-        {
-          role: 'user',
-          content: "Respond in one short sentence: " + prompt
-        }
-      ],
-      max_completion_tokens: model === 'openai/gpt-oss-20b' ? 200 : 100,
-      ...(model === 'openai/gpt-oss-20b' && { 
-        reasoning_effort: 'low',
-        }),
-    }),
+async function getResponse(prompt, model) {
+  const { data, error } = await supabase.functions.invoke('models', {
+    body: { provider: model.provider, model: model.model, prompt },
   })
-  const data = await response.json()
-  //console.log(`${model} response:`, JSON.stringify(data));
-  return data.choices[0].message.content
+  if (error) throw error
+  if (data.error) throw new Error(data.error)
+  return data.text
 }
 
-export async function getResponses(prompt, activeModels) {
+export async function getResponses(prompt) {
     const responses = await Promise.all(
-        activeModels.map( async (model) => { //async is needed here for await getGroq
+        MODELS.map( async (model) => { //async is needed here for await getGroq
             try {
                 return {
                 id: model.id,
-                response: await getGroq(prompt, model.model)
+                response: await getResponse(prompt, model)
                 };
             } catch (err) {
                 console.error(`${model.id} failed:`, err);
@@ -55,22 +37,46 @@ export async function getResponses(prompt, activeModels) {
     return responses;
 } //basically promise.all is waiting for the array of promises to resolve to retunr it as one single promise, promiseception
 
-export async function getVotes(prompt, responses, activeModels) {
-    const votingPrompt = `You are playing a game. A question was asked: "${prompt}"
-    Here's the responses:
-  ${responses.map((curr, index) => `${index + 1}. "${curr.response}"`).join('\n')}
+export async function getVotes(prompt, responses, question) {
+  const votingPrompt =
+    `${responses.length} responses to "${question}" are below. ${responses.length - 1} were written
+    by AI models. One was written by a human trying to sound
+    like an AI. Identify the human.
 
-    One of these was written by a human. Which number do you think is the human? Reply with ONLY the number, nothing else`
+    The human will probably fail in one of these ways: they will
+    be too short, too specific, too committed, or accidentally
+    casual. Or they will overcorrect and sound MORE like a
+    stereotype of AI writing than any real AI would.
 
-    const votes = await Promise.all(
-    activeModels.map(async (model) => {
-      const raw = await getGroq(votingPrompt, model.model);
-      const parsed = parseInt(raw.match(/\d+/)?.[0]) || -1; //extracts the first number that shows up, otherwise it jsut is -1
-      return {
-        id: model.id,
-        vote: responses[parsed - 1].id // Instead of just the number response, since the user won't see the shuffled, it will show the username
+    Responses:
+    ${responses.map((curr, index) => `${index + 1}. "${curr.response}"`).join('\n')}
+
+    Reply in this exact format:
+    NUMBER
+    REASON: one sentence explaining why`
+
+  const votes = await Promise.all(
+    MODELS.map(async (model) => {
+      try {
+        const raw = await getResponse(votingPrompt, model);
+        const nums = raw.match(/\d+/g)
+        const parsed = nums ? parseInt(nums[nums.length - 1]) : -1
+        const reasonMatch = raw.match(/REASON:\s*(.+)/i);
+        const explanation = reasonMatch ? reasonMatch[1].trim() : raw;
+        return {
+          id: model.id,
+          vote: responses[parsed - 1]?.id || -1,
+          explanation,
+        };
+      } catch (err) {
+        console.error(`${model.id} vote failed:`, err)
+        return {
+          id: model.id,
+          vote: -1,
+          explanation: '' 
+        }
       };
     })
-  );
-  return votes;
+  )
+  return votes
 }
