@@ -1,7 +1,9 @@
 import "./lobby.css"
 import { useState, useRef, useEffect} from "react";
+import { useNavigate } from "react-router-dom";
 import { getResponses, getVotes } from '../lib/model'
 import icon from "/person.png"
+import { createPlayers } from "../lib/players"
 
 export default function Lobby() {
   const [responses, setResponses] = useState([]);
@@ -10,13 +12,10 @@ export default function Lobby() {
   const [phase, setPhase] = useState('responding');
   const finalResponse = useRef(null);
   const [timeLeft, setTimeLeft] = useState(40);
+  const [players, setPlayers] = useState(() => createPlayers());
+  const navigate = useNavigate();
 
-  const players = [
-    { name: "[USER]" },
-    { name: "[SOME AI #1]" },
-    { name: "[SOME AI #2]" },
-    { name: "[SOME AI #3]" },
-  ];
+  const userName = "[USER]";
 
   const PHASES = {
     RESPONDING: "responding",
@@ -30,20 +29,40 @@ export default function Lobby() {
     setPhase(PHASES.LOADING);
     try {
         const humanAnswer = finalResponse.current?.value || ''; //if user runs out of time or submits something empty
-        const responses = await getResponses(question);
+        const activeModels = players.filter(player => player.state && player.model !== null); // In order to stop generating responses from eliminated agents
+        const responses = await getResponses(question, activeModels);
         const index = Math.floor(Math.random() * (responses.length + 1));
         responses.splice(index, 0, { id: 'human', response: humanAnswer });
+        // console.log(responses); // Testing Line
         setResponses(responses);
         setPhase(PHASES.INTERM);
     } catch (err) {
         console.error('Failed to get responses:', err);
         setPhase(PHASES.RESPONDING);
+    }
   }
-}
 
-  async function submitVotes() {
-    const voteResults = await getVotes(question, responses);
-    setVotes(voteResults);
+  async function submitVotes(userVote) {
+    const activeModels = players.filter(player => player.state && player.model !== null);
+    const voteResults = await getVotes(question, responses, activeModels);
+    setVotes([...voteResults, userVote]);
+  }
+
+  function playerElimination(roundVotes) {
+    const votesPerPlayer = {}
+    for (const v of roundVotes) {
+      votesPerPlayer[v.vote] = votesPerPlayer[v.vote] ? votesPerPlayer[v.vote] + 1 : 1;
+    }
+
+    const idToEliminate = Object.entries(votesPerPlayer).reduce((a, b) => a[1] > b[1] ? a : b)[0]
+    console.log(idToEliminate)
+
+    if (idToEliminate === "human") {
+      navigate("/you-lose");
+    }
+
+    setPlayers(prevSet => prevSet.map(player => player.id === idToEliminate ? { ...player, state: false } : player));
+    setPhase(PHASES.RESPONDING);
   }
 
   useEffect(() => {
@@ -59,17 +78,29 @@ export default function Lobby() {
   }, [timeLeft]);
 
   useEffect(() => {
-    if (phase !== PHASES.VOTING) return;
-    submitVotes();
-  }, [phase]);
+    if (votes.length === 0) return;
+
+    playerElimination(votes);
+  }, [votes]);
+
+  useEffect(() => {
+    const alive = players.filter(player => player.state === true);
+
+    if (alive.length === 1 && players[0].id === "human") {
+      navigate("/you-win");
+    }
+  }, [players]);
 
   return (
       <div className="lobby">
         {players.map((player, idx) => {
           return (
-            <div className="players" id={`player-${idx}`} key={player.name}>
+            <div className={`players ${player.state ? "alive" : "eliminated"}`} id={`player-${idx}`} key={player.name}>
               <p>{player.name}</p>
               <img className="person-icon" src={icon} alt="Icon of a person."/>
+              {(phase === PHASES.VOTING && player.name != userName && player.state) && (
+                <button onClick={() => submitVotes({id: 'human', vote: player.id})}>Vote Out</button>
+              )} 
             </div>
           )
         })}
@@ -109,9 +140,14 @@ export default function Lobby() {
             {responses.map((r, i) => (
               <p key={i}>{i + 1}. {r.response}</p>
             ))}
-            {votes.length > 0 && votes.map((v) => (
-              <p key={v.id}>{v.id} voted: #{v.vote}</p>
-            ))}
+            {votes.length > 0 && votes.map((v) => {
+              const voter = players.find(p => p.id === v.id);
+              const target = players.find(p=> p.id === v.vote);
+
+              return (
+                <p key={v.id}>{voter?.name} voted for {target?.name}</p>
+              )
+            })}
           </div>
         )}
       </div>
