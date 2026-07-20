@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router';
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import icon from "/person.png"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ export default function LoginPage() {
   }
 
   return(
-    <div className="loginpage">
+    <div className="loginpage" style={{ backgroundImage: `url(${icon})` }}>
       <h1> Trust No One </h1>
 
       <div className="auth-card">

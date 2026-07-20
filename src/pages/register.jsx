@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router';
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import icon from "/person.png"
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="loginpage">
+    <div className="loginpage" style={{ backgroundImage: `url(${icon})` }}>
       <h1> Create an account</h1>
 
       <div className="auth-card">

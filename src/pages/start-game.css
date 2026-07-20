@@ -9,3 +9,24 @@
   padding: 12px 24px;
   font-size: 24px;
 }
+
+.game-desc{
+  max-width: 550px;
+  margin: 0 auto 20px;
+  padding: 24px 28px;
+  background-color: #2b2836;
+  border-radius: 8px;
+  box box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  color: #d5d2df;
+  text-align: left;
+}
+.game-steps{
+  max-width: 550px;
+  margin: 0 auto 20px;
+  padding: 24px 28px 24px 48px;
+  background-color: #2b2836;
+  border-radius: 8px;
+  box box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  color: #d5d2df;
+  text-align: left;
+}

@@ -2,6 +2,7 @@ import "./leaderboard.css"
 import { useNavigate } from 'react-router';
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import icon from "/person.png"
 
 export default function Leaderboard(){
   const [leaderboardData, setLeaderboardData] = useState([]);
@@ -33,7 +34,7 @@ export default function Leaderboard(){
 
   const navigate = useNavigate()
   return (
-    <div className="leaderboard">
+    <div className="leaderboard" style={{ backgroundImage: `url(${icon})` }}>
       <div className="leaderboard-header">
         <button className="back-button" onClick={() => navigate("/start-game")}>
         Go Back
