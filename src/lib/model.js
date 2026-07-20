@@ -35,9 +35,9 @@ async function getGroq(prompt, model) {
   return data.choices[0].message.content
 }
 
-export async function getResponses(prompt) {
+export async function getResponses(prompt, activeModels) {
     const responses = await Promise.all(
-        MODELS.map( async (model) => { //async is needed here for await getGroq
+        activeModels.map( async (model) => { //async is needed here for await getGroq
             try {
                 return {
                 id: model.id,
@@ -55,7 +55,7 @@ export async function getResponses(prompt) {
     return responses;
 } //basically promise.all is waiting for the array of promises to resolve to retunr it as one single promise, promiseception
 
-export async function getVotes(prompt, responses) {
+export async function getVotes(prompt, responses, activeModels) {
     const votingPrompt = `You are playing a game. A question was asked: "${prompt}"
     Here's the responses:
   ${responses.map((curr, index) => `${index + 1}. "${curr.response}"`).join('\n')}
@@ -63,7 +63,7 @@ export async function getVotes(prompt, responses) {
     One of these was written by a human. Which number do you think is the human? Reply with ONLY the number, nothing else`
 
     const votes = await Promise.all(
-    MODELS.map(async (model) => {
+    activeModels.map(async (model) => {
       const raw = await getGroq(votingPrompt, model.model);
       const parsed = parseInt(raw.match(/\d+/)?.[0]) || -1; //extracts the first number that shows up, otherwise it jsut is -1
       return {
