@@ -4,12 +4,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getResponses, getVotes } from '../lib/model'
 import icon from "/person.png"
 import { createPlayers } from "../lib/players"
+import { getQuestion } from "../lib/prompt";
 
 export default function Lobby() {
   const location = useLocation();
   const [responses, setResponses] = useState(location.state?.responses || []);
   const [votes, setVotes] = useState([]);
-  const [question, setQuestion] = useState(location.state?.question || 'Who do you think is better, Messi or Ronaldo?'); // hardcoded for now
+  const [question, setQuestion] = useState(location.state?.question ?? null);
   const [phase, setPhase] = useState(location.state?.phase || 'responding');
   const finalResponse = useRef(null);
   const [timeLeft, setTimeLeft] = useState(40);
@@ -63,6 +64,7 @@ export default function Lobby() {
     }
 
     setPlayers(prevSet => prevSet.map(player => player.id === idToEliminate ? { ...player, state: false } : player));
+    setQuestion(null);
     setPhase(PHASES.RESPONDING);
   }
 
@@ -92,6 +94,26 @@ export default function Lobby() {
     }
   }, [players, responses, question, navigate]);
 
+  useEffect(() => {
+    if (question !== null) return;
+
+    async function loadQuestion() {
+      try {
+        const questionData = await getQuestion();
+        
+        if (questionData.type === "word") {
+          setQuestion(`Create a sentence using the word: ${questionData.data}.`)
+        } else {
+          setQuestion(`This article is titled ${questionData.data.title}. What do you think it's about?`);
+        }
+      } catch (e) {
+        setQuestion('Who do you think is better, Messi or Ronaldo?');
+      }
+    };
+
+    loadQuestion();
+  }, [question]);
+
   return (
       <div className="lobby">
         {players.map((player, idx) => {
@@ -106,7 +128,7 @@ export default function Lobby() {
           )
         })}
         <div className="prompt">
-          <p>{question}</p>
+          <p>{question === null ? "Loading" : question}</p>
         </div>
 
         {(phase === PHASES.RESPONDING || phase === PHASES.VOTING) && (
