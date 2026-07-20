@@ -1,9 +1,10 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import icon from "/person.png"
 
 export default function Lose() {
   const [showRationales, setShowRationales] = useState(false);
+  const location = useLocation();
 
   const rationales = [
     {
@@ -86,7 +87,7 @@ export default function Lose() {
             <button className="btn" onClick={() => setShowRationales(false)}>
               Back to Lose Screen
             </button>
-            <Link to="/lobby/view-responses" className="btn secondary">
+            <Link to="/lobby/view-responses" state={location.state} className="btn secondary">
               Back to Lobby
             </Link>
           </div>
@@ -100,7 +101,7 @@ export default function Lose() {
       <div className="title lose">YOU LOSE</div>
       
       <div>
-        <Link to="/lobby/view-responses" className="btn danger">
+        <Link to="/lobby/view-responses" state={location.state} className="btn danger">
           Play Again
         </Link>
         <button className="btn danger" onClick={() => setShowRationales(true)}>

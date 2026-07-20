@@ -1,42 +1,57 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import icon from "/person.png"
 
 export default function ViewResponses() {
-  const players = [
+  const location = useLocation();
+  const navigate = useNavigate();
+  const responses = location.state?.responses || [];
+  const playersState = location.state?.players || [];
+  const question = location.state?.question || "";
+
+  const players = playersState.length > 0 ? playersState.map(p => {
+    const rObj = responses.find(r => r.id === p.id);
+    return {
+      id: p.id,
+      name: p.name,
+      random: p.id === 'human' ? 'Human' : (p.id || 'AI Model'),
+      votedFor: 'Pending',
+      response: rObj ? rObj.response : ''
+    };
+  }) : [
     {
       id: "481",
       name: "Player",
       random: "Random 481",
       votedFor: "Player 902",
-      response: ""
+      response: "Messi is obviously better, his stats are crazy."
     },
     {
       id: "902",
       name: "Player",
       random: "Random 902",
       votedFor: "Rahim (Human)",
-      response: ""
+      response: "Ronaldo has proven himself in multiple leagues."
     },
     {
       id: "115",
       name: "Player",
       random: "Random 115",
       votedFor: "Player 632",
-      response: ""
+      response: "Both are legends, but Messi has the World Cup."
     },
     {
       id: "632",
       name: "Player",
       random: "Random 632",
       votedFor: "Rahim (Human)",
-      response: ""
+      response: "I prefer watching Ronaldo play."
     },
     {
       id: "704",
       name: "Player",
       random: "Random 704",
       votedFor: "Player 115",
-      response: ""
+      response: "It is a tough call, both are great."
     }
   ];
 
@@ -84,6 +99,11 @@ export default function ViewResponses() {
 
       {/* Navigation demo helper for development / presentation */}
       <div className="navigation-demo-bar">
+        {playersState.length > 0 && (
+          <button className="btn" onClick={() => navigate('/lobby', { state: { phase: 'voting', responses, players: playersState, question } })}>
+            Continue to Vote
+          </button>
+        )}
         <Link to="/you-win" className="btn">
           Go to Win Screen
         </Link>

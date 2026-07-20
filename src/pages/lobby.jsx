@@ -1,18 +1,19 @@
 import "./lobby.css"
 import { useState, useRef, useEffect} from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getResponses, getVotes } from '../lib/model'
 import icon from "/person.png"
 import { createPlayers } from "../lib/players"
 
 export default function Lobby() {
-  const [responses, setResponses] = useState([]);
+  const location = useLocation();
+  const [responses, setResponses] = useState(location.state?.responses || []);
   const [votes, setVotes] = useState([]);
-  const [question, setQuestion] = useState('Who do you think is better, Messi or Ronaldo?'); // hardcoded for now
-  const [phase, setPhase] = useState('responding');
+  const [question, setQuestion] = useState(location.state?.question || 'Who do you think is better, Messi or Ronaldo?'); // hardcoded for now
+  const [phase, setPhase] = useState(location.state?.phase || 'responding');
   const finalResponse = useRef(null);
   const [timeLeft, setTimeLeft] = useState(40);
-  const [players, setPlayers] = useState(() => createPlayers());
+  const [players, setPlayers] = useState(location.state?.players || (() => createPlayers()));
   const navigate = useNavigate();
 
   const userName = "[USER]";
@@ -35,7 +36,7 @@ export default function Lobby() {
         responses.splice(index, 0, { id: 'human', response: humanAnswer });
         // console.log(responses); // Testing Line
         setResponses(responses);
-        setPhase(PHASES.INTERM);
+        navigate('/lobby/view-responses', { state: { responses, players, question } });
     } catch (err) {
         console.error('Failed to get responses:', err);
         setPhase(PHASES.RESPONDING);
@@ -58,7 +59,7 @@ export default function Lobby() {
     console.log(idToEliminate)
 
     if (idToEliminate === "human") {
-      navigate("/you-lose");
+      navigate("/you-lose", { state: { responses, players, question } });
     }
 
     setPlayers(prevSet => prevSet.map(player => player.id === idToEliminate ? { ...player, state: false } : player));
@@ -87,9 +88,9 @@ export default function Lobby() {
     const alive = players.filter(player => player.state === true);
 
     if (alive.length === 1 && players[0].id === "human") {
-      navigate("/you-win");
+      navigate("/you-win", { state: { responses, players, question } });
     }
-  }, [players]);
+  }, [players, responses, question, navigate]);
 
   return (
       <div className="lobby">
