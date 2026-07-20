@@ -59,7 +59,7 @@ export default function Lobby() {
     console.log(idToEliminate)
 
     if (idToEliminate === "human") {
-      navigate("/you-lose");
+      navigate("/you-lose", { state: { responses, players, question } });
     }
 
     setPlayers(prevSet => prevSet.map(player => player.id === idToEliminate ? { ...player, state: false } : player));
@@ -88,9 +88,9 @@ export default function Lobby() {
     const alive = players.filter(player => player.state === true);
 
     if (alive.length === 1 && players[0].id === "human") {
-      navigate("/you-win");
+      navigate("/you-win", { state: { responses, players, question } });
     }
-  }, [players]);
+  }, [players, responses, question, navigate]);
 
   return (
       <div className="lobby">
