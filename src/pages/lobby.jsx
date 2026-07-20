@@ -2,6 +2,7 @@ import "./lobby.css"
 import { useState, useRef, useEffect} from "react";
 import { getResponses, getVotes } from '../lib/model'
 import icon from "/person.png"
+import { createPlayers } from "../lib/players"
 
 export default function Lobby() {
   const [responses, setResponses] = useState([]);
@@ -10,13 +11,9 @@ export default function Lobby() {
   const [phase, setPhase] = useState('responding');
   const finalResponse = useRef(null);
   const [timeLeft, setTimeLeft] = useState(40);
+  const [players, setPlayers] = useState(() => createPlayers());
 
-  const players = [
-    { name: "[USER]" },
-    { name: "[SOME AI #1]" },
-    { name: "[SOME AI #2]" },
-    { name: "[SOME AI #3]" },
-  ];
+  const userName = "[USER]";
 
   const PHASES = {
     RESPONDING: "responding",
@@ -33,17 +30,18 @@ export default function Lobby() {
         const responses = await getResponses(question);
         const index = Math.floor(Math.random() * (responses.length + 1));
         responses.splice(index, 0, { id: 'human', response: humanAnswer });
+        // console.log(responses); // Testing Line
         setResponses(responses);
         setPhase(PHASES.INTERM);
     } catch (err) {
         console.error('Failed to get responses:', err);
         setPhase(PHASES.RESPONDING);
+    }
   }
-}
 
-  async function submitVotes() {
+  async function submitVotes(userVote) {
     const voteResults = await getVotes(question, responses);
-    setVotes(voteResults);
+    setVotes([...voteResults, userVote]);
   }
 
   useEffect(() => {
@@ -58,11 +56,6 @@ export default function Lobby() {
     if (phase === PHASES.RESPONDING) submitAnswers();
   }, [timeLeft]);
 
-  useEffect(() => {
-    if (phase !== PHASES.VOTING) return;
-    submitVotes();
-  }, [phase]);
-
   return (
       <div className="lobby">
         {players.map((player, idx) => {
@@ -70,6 +63,9 @@ export default function Lobby() {
             <div className="players" id={`player-${idx}`} key={player.name}>
               <p>{player.name}</p>
               <img className="person-icon" src={icon} alt="Icon of a person."/>
+              {(phase === PHASES.VOTING && player.name != userName) && (
+                <button onClick={() => submitVotes({id: 'human', vote: player.id})}>Vote Out</button>
+              )} 
             </div>
           )
         })}
@@ -109,9 +105,14 @@ export default function Lobby() {
             {responses.map((r, i) => (
               <p key={i}>{i + 1}. {r.response}</p>
             ))}
-            {votes.length > 0 && votes.map((v) => (
-              <p key={v.id}>{v.id} voted: #{v.vote}</p>
-            ))}
+            {votes.length > 0 && votes.map((v) => {
+              const voter = players.find(p => p.id === v.id);
+              const target = players.find(p=> p.id === v.vote);
+
+              return (
+                <p key={v.id}>{voter?.name} voted for {target?.name}</p>
+              )
+            })}
           </div>
         )}
       </div>

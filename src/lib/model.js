@@ -1,7 +1,7 @@
 const SYSTEM_PROMPT = "You are an AI model playing a game, in this game there are AI models trying to find the human. Your response should sound like a human would respond, allowing for humanization to be present in your response as to not be obvious."
-const MODELS = [
+export const MODELS = [
   { id: 'llama-3.3', model: 'llama-3.3-70b-versatile' },
-  { id: 'llama-4', model: 'meta-llama/llama-4-scout-17b-16e-instruct' },
+  // { id: 'llama-4', model: 'meta-llama/llama-4-scout-17b-16e-instruct' },
   { id: 'gpt-20b', model: 'openai/gpt-oss-20b' },
 ]
 
@@ -68,7 +68,7 @@ export async function getVotes(prompt, responses) {
       const parsed = parseInt(raw.match(/\d+/)?.[0]) || -1; //extracts the first number that shows up, otherwise it jsut is -1
       return {
         id: model.id,
-        vote: parsed
+        vote: responses[parsed - 1].id // Instead of just the number response, since the user won't see the shuffled, it will show the username
       };
     })
   );
