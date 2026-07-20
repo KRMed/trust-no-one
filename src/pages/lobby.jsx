@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getResponses, getVotes } from '../lib/model'
 import icon from "/person.png"
 import { createPlayers } from "../lib/players"
+import { getEliminatedId, checkWinner} from "../lib/elimination"
 
 export default function Lobby() {
   const location = useLocation();
@@ -50,12 +51,7 @@ export default function Lobby() {
   }
 
   function playerElimination(roundVotes) {
-    const votesPerPlayer = {}
-    for (const v of roundVotes) {
-      votesPerPlayer[v.vote] = votesPerPlayer[v.vote] ? votesPerPlayer[v.vote] + 1 : 1;
-    }
-
-    const idToEliminate = Object.entries(votesPerPlayer).reduce((a, b) => a[1] > b[1] ? a : b)[0]
+    const idToEliminate = getEliminatedId(roundVotes);
     console.log(idToEliminate)
 
     if (idToEliminate === "human") {
@@ -85,9 +81,7 @@ export default function Lobby() {
   }, [votes]);
 
   useEffect(() => {
-    const alive = players.filter(player => player.state === true);
-
-    if (alive.length === 1 && players[0].id === "human") {
+    if (checkWinner(players)) {
       navigate("/you-win", { state: { responses, players, question } });
     }
   }, [players, responses, question, navigate]);
