@@ -99,16 +99,15 @@ function playerElimination(roundVotes) {
     if (question !== null) return;
 
     async function loadQuestion() {
-      try {
-        const questionData = await getQuestion();
-        
-        if (questionData.type === "word") {
-          setQuestion(`Create a sentence using the word: ${questionData.data}.`)
-        } else {
-          setQuestion(`This article is titled ${questionData.data.title}. What do you think it's about?`);
-        }
-      } catch (e) {
-        setQuestion('Who do you think is better, Messi or Ronaldo?');
+      const questionData = await getQuestion();
+
+      if (questionData.type === "word") {
+        setQuestion(`Create a sentence using the following word: ${questionData.data}.`);
+      } else if (questionData.type === "article") {
+        const formatted_data = `ARTICLE: \"${questionData.data.title}\"\n\nDESCRIPTION:\n${questionData.data.content}`
+        setQuestion(`${formatted_data}\n\nWhat opinions or main points can you formulate from this description?`);
+      } else {
+        setQuestion(questionData.data);
       }
     };
 
