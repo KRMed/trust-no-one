@@ -9,7 +9,7 @@ export default function StartGame() {
       <h1>Trust No One!</h1>
       <p className="game-desc">
         Welcome to Trust No One, a single player game where you are the only human hiding
-        among 4 AIs. Survive all 5 rounds to win. Below is the game flow:
+        among 5 AIs. Survive all 5 rounds to win. Below is the game flow:
       </p>
       <ol className="game-steps">
         <li>Everyone is asked the same question.</li>
@@ -20,7 +20,7 @@ export default function StartGame() {
       </ol>
       <div className = "button-startgame">
         <button onClick={() => navigate("/lobby")}>
-          StartGame
+          Start Game
         </button>
         <button onClick={() => navigate("/leaderboard")}>
           Leaderboard

@@ -7,7 +7,7 @@ export default function Win() {
       <div className="title win">YOU WIN</div>
       
       <div>
-        <Link to="/lobby/view-responses" state={location.state} className="btn">
+        <Link to="/lobby" state={location.state} className="btn">
           Play Again
         </Link>
       </div>

@@ -13,11 +13,24 @@ describe('tallyVotes', () => {
   expect(tallyVotes(votes)).toEqual({ai1: 2, human: 1})
 })
 
+  it('counts valid votes and ignores failed votes', () => {
+  const votes = [
+    { id: 'human', vote: 'ai1' },
+    { id: 'ai2', vote: -1 },
+    { id: 'ai3', vote: 'ai1' },
+    { id: 'ai4', vote: 'human' }
+  ]
+  expect(tallyVotes(votes)).toEqual({
+    ai1: 2,
+    human: 1
+  })
+})
+
 it('returns an empty object when no one votes', () => {
   expect(tallyVotes([])).toEqual({})
 })
-
 })
+
 
 describe('getEliminatedId', () => {
 
@@ -40,8 +53,17 @@ describe('getEliminatedId', () => {
     ]
     expect(getEliminatedId(votes)).toEqual('')
   })
-})
 
+  it('returns undefined when no one votes', () => {
+    const votes=[
+      {id: 'ai1', vote: -1},
+      {id: 'human', vote: -1},
+      {id: 'ai2', vote: -1},
+
+    ]
+    expect(getEliminatedId(votes)).toEqual(undefined)
+  })
+})
 
 const players = [
   { id: 'ai1', state: false },

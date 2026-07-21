@@ -4,7 +4,8 @@ const USERNAMES = [
     "astronoutcocoa",
     "redtomatojuice",
     "baconpureheart",
-    "earthcowtongue"
+    "earthcowtongue",
+    "sneakycheeseburger",
 ];
 
 // Allows the AI agents to have random usernames connected to their ID

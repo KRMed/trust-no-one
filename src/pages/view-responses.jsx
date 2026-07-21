@@ -8,14 +8,14 @@ export default function ViewResponses() {
   const playersState = location.state?.players || [];
   const question = location.state?.question || "";
 
-  const players = playersState.length > 0 ? playersState.map(p => {
-    const rObj = responses.find(r => r.id === p.id);
+  const players = responses.length ? responses.map((r, index) => {
+    const pObj = playersState.find(p => p.id === r.id);
     return {
-      id: p.id,
-      name: p.name,
-      random: p.id === 'human' ? 'Human' : (p.id || 'AI Model'),
+      id: r.id,
+      name: pObj?.name || `Player ${index + 1}`,
+      random: r.id === 'human' ? 'Human' : (r.id || 'AI Model'),
       votedFor: 'Pending',
-      response: rObj ? rObj.response : ''
+      response: r.response,
     };
   }) : [
     {
@@ -60,7 +60,7 @@ export default function ViewResponses() {
       <div className="players-container">
         {/* Top Row: 3 Players */}
         <div className="players-row">
-          {players.slice(0, 3).map((player) => (
+          {players.slice(0, Math.ceil(players.length / 2)).map((player) => (
             <div className="player-card" key={player.id}>
               <div className="player-header">
                 <img className="person-icon" src={icon} alt="Icon of a person." style={{ width: "44px", height: "44px", objectFit: "contain" }} />
@@ -79,7 +79,7 @@ export default function ViewResponses() {
 
         {/* Bottom Row: 2 Players */}
         <div className="players-row">
-          {players.slice(3, 5).map((player) => (
+          {players.slice(Math.ceil(players.length / 2)).map((player) => (
             <div className="player-card" key={player.id}>
               <div className="player-header">
                 <img className="person-icon" src={icon} alt="Icon of a person." style={{ width: "44px", height: "44px", objectFit: "contain" }} />
