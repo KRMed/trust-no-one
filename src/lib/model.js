@@ -17,9 +17,10 @@ async function getResponse(prompt, model) {
   return data.text
 }
 
-export async function getResponses(prompt) {
+export async function getResponses(prompt, activeModels) {
+    console.log(activeModels);
     const responses = await Promise.all(
-        MODELS.map( async (model) => { //async is needed here for await getGroq
+        activeModels.map( async (model) => { //async is needed here for await getGroq
             try {
                 return {
                 id: model.id,
@@ -34,10 +35,11 @@ export async function getResponses(prompt) {
             }
         })
     )
+    console.log(responses);
     return responses;
 } //basically promise.all is waiting for the array of promises to resolve to retunr it as one single promise, promiseception
 
-export async function getVotes(prompt, responses, question) {
+export async function getVotes(question, responses, activeModels) {
   const votingPrompt =
     `${responses.length} responses to "${question}" are below. ${responses.length - 1} were written
     by AI models. One was written by a human trying to sound
@@ -56,7 +58,7 @@ export async function getVotes(prompt, responses, question) {
     REASON: one sentence explaining why`
 
   const votes = await Promise.all(
-    MODELS.map(async (model) => {
+    activeModels.map(async (model) => {
       try {
         const raw = await getResponse(votingPrompt, model);
         const nums = raw.match(/\d+/g)
