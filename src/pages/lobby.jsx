@@ -4,7 +4,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getResponses, getVotes } from '../lib/model'
 import icon from "/person.png"
 import { createPlayers } from "../lib/players"
+import { getEliminatedId, checkWinner} from "../lib/elimination"
 import { getQuestion } from "../lib/prompt";
+import { supabase } from "../lib/supabase";
 
 export default function Lobby() {
   const location = useLocation();
@@ -16,8 +18,8 @@ export default function Lobby() {
   const [timeLeft, setTimeLeft] = useState(40);
   const [players, setPlayers] = useState(location.state?.players || (() => createPlayers()));
   const navigate = useNavigate();
-
-  const userName = "[USER]";
+  const [userName, setUserName] = useState("User");
+  const [aiVotes, setAiVotes] = useState(location.state?.aiVotes || null);
 
   const PHASES = {
     RESPONDING: "responding",
@@ -44,34 +46,27 @@ export default function Lobby() {
     }
   }
 
-  async function submitVotes(userVote) {
-    const activeModels = players.filter(player => player.state && player.model !== null);
-    const voteResults = await getVotes(question, responses, activeModels);
-    setVotes([...voteResults, userVote]);
+  function submitVotes(userVote) { //not async anymore because we don't have to wait anymore for function call
+    if (!aiVotes) return;
+    setVotes([...aiVotes, userVote]);
   }
 
-  function playerElimination(roundVotes) {
-    const votesPerPlayer = {};
-    for (const v of roundVotes) {
-      if (v.vote === -1) continue; //ignore failed votes
-      votesPerPlayer[v.vote] = (votesPerPlayer[v.vote] || 0) + 1;
-    }
+function playerElimination(roundVotes) {
+  const idToEliminate = getEliminatedId(roundVotes);
 
-    if (Object.keys(votesPerPlayer).length === 0) {
-      //no valid votes, skip the round or deal wit it
-      setPhase(PHASES.RESPONDING);
-      return;
-    }
+  if (idToEliminate === undefined) {
+    //no valid votes, skip the round or deal wit it
+    setPhase(PHASES.RESPONDING);
+    return;
+  }
 
-    const idToEliminate = Object.entries(votesPerPlayer)
-      .reduce((a, b) => a[1] > b[1] ? a : b)[0];
-
-    if (idToEliminate === "human") {
-      navigate("/you-lose", { state: { responses, players, question, votes: roundVotes } });
-      return;
-    }
+  if (idToEliminate === "human") {
+    navigate("/you-lose", { state: { responses, players, question, votes: roundVotes } });
+    return;
+  }
 
     setPlayers(prevSet => prevSet.map(player => player.id === idToEliminate ? { ...player, state: false } : player));
+    setAiVotes(null);
     setQuestion(null);
     setPhase(PHASES.RESPONDING);
   }
@@ -95,9 +90,7 @@ export default function Lobby() {
   }, [votes]);
 
   useEffect(() => {
-    const alive = players.filter(player => player.state === true);
-
-    if (alive.length === 1 && players[0].id === "human") {
+    if (checkWinner(players)) {
       navigate("/you-win", { state: { responses, players, question } });
     }
   }, [players, responses, question, navigate]);
@@ -121,13 +114,44 @@ export default function Lobby() {
     loadQuestion();
   }, [question]);
 
+  useEffect(() => {
+    supabase.auth.getUser().then((result) => {
+      if (result.error) {
+        console.error(result.error.message);
+        return;
+      }
+      if (!result.data.user) {
+        console.error("no auth user");
+        return;
+      }
+
+      supabase
+        .from("accounts")
+        .select("username")
+        .eq("id", result.data.user.id)
+        .single()
+        .then((result) => {
+          if (result.error) {
+            console.error(result.error.message);
+            return;
+          }
+          setUserName(result.data.username);
+          setPlayers(prev => prev.map(p => p.id === 'human' ? { ...p, name: result.data.username } : p));
+        });
+    });
+  }, []);
+
   return (
       <div className="lobby">
         {players.map((player, idx) => {
           return (
             <div className={`players ${player.state ? "alive" : "eliminated"}`} id={`player-${idx}`} key={player.name}>
               <p>{player.name}</p>
+              {player.state ? (
               <img className="person-icon" src={icon} alt="Icon of a person."/>
+            ) : (
+              <div className="eliminated-x">✕</div>
+            )}
               {(phase === PHASES.VOTING && player.name != userName && player.state) && (
                 <button className="btn danger" onClick={() => submitVotes({id: 'human', vote: player.id, explanation: 'Player vote'})}>Vote Out</button>
               )} 
