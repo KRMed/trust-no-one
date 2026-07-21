@@ -17,7 +17,7 @@ export function createPlayers() {
         .sort((a, b) => a.sort - b.sort)
         .map(({ val }) => val)
     MODELS.forEach((bot, idx) => {
-        players.push({ id: bot.id, name: randomNames[idx], model: bot.model, state: true})
+        players.push({ id: bot.id, name: randomNames[idx], provider: bot.provider, model: bot.model, state: true})
     })
 
     return players;

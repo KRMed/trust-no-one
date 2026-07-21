@@ -1,7 +1,7 @@
 import "./lobby.css"
-import { useState, useRef, useEffect} from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getResponses, getVotes } from '../lib/model'
+import { getResponses } from '../lib/model'
 import icon from "/person.png"
 import { createPlayers } from "../lib/players"
 import { getEliminatedId, checkWinner} from "../lib/elimination"
@@ -17,6 +17,9 @@ export default function Lobby() {
   const finalResponse = useRef(null);
   const [timeLeft, setTimeLeft] = useState(40);
   const [players, setPlayers] = useState(location.state?.players || (() => createPlayers()));
+  const activePlayers = useMemo(() => {
+    return players.filter(player => player.state)
+  }, [players]);
   const navigate = useNavigate();
   const [userName, setUserName] = useState("User");
   const [aiVotes, setAiVotes] = useState(location.state?.aiVotes || null);
@@ -33,13 +36,13 @@ export default function Lobby() {
     setPhase(PHASES.LOADING);
     try {
         const humanAnswer = finalResponse.current?.value || ''; //if user runs out of time or submits something empty
-        const activeModels = players.filter(player => player.state && player.model !== null); //to stop generating responses from eliminated agents
+        const activeModels = activePlayers.filter(player => player.model !== null); // To only get the active models, not the player
         const responses = await getResponses(question, activeModels);
         const index = Math.floor(Math.random() * (responses.length + 1));
         responses.splice(index, 0, { id: 'human', response: humanAnswer });
         // console.log(responses); // Testing Line
         setResponses(responses);
-        navigate('/lobby/view-responses', { state: { responses, players, question } });
+        navigate('/lobby/view-responses', { state: { responses, players, activePlayers, question } });
     } catch (err) {
         console.error('Failed to get responses:', err);
         setPhase(PHASES.RESPONDING);

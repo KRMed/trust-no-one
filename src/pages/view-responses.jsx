@@ -8,7 +8,8 @@ export default function ViewResponses() {
   const location = useLocation();
   const navigate = useNavigate();
   const responses = location.state?.responses || [];
-  const playersState = location.state?.players || [];
+  const playersState = location.state?.players || []; // All players
+  const activePlayers = location.state?.activePlayers || []; // Stores only the ones with state === true
   const question = location.state?.question || "";
   const [aiVotes, setAiVotes] = useState(null);
 
@@ -61,7 +62,7 @@ export default function ViewResponses() {
 
   useEffect(() => {
     if (!responses.length || !playersState.length) return;
-    const activeModels = playersState.filter(p => p.state && p.model !== null);
+    const activeModels = activePlayers.filter(p => p.model !== null);
     getVotes(question, responses, activeModels)
       .then(setAiVotes)
       .catch(err => console.error('Failed to prefetch votes:', err));
