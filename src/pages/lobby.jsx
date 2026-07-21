@@ -7,12 +7,6 @@ import { createPlayers } from "../lib/players"
 import { getQuestion } from "../lib/prompt";
 
 export default function Lobby() {
-  const QUESTIONS = [
-  "Who do you think is better, Messi or Ronaldo?",
-  "Is a hot dog a sandwich?",
-  "What is the best programming language?",
-  "Who is the greatest basketball player of all time?",
-];
   const location = useLocation();
   const [responses, setResponses] = useState(location.state?.responses || []);
   const [votes, setVotes] = useState([]);
@@ -112,16 +106,15 @@ export default function Lobby() {
     if (question !== null) return;
 
     async function loadQuestion() {
-      try {
-        const questionData = await getQuestion();
-        
-        if (questionData.type === "word") {
-          setQuestion(`Create a sentence using the word: ${questionData.data}.`)
-        } else {
-          setQuestion(`This article is titled ${questionData.data.title}. What do you think it's about?`);
-        }
-      } catch (e) {
-        setQuestion('Who do you think is better, Messi or Ronaldo?');
+      const questionData = await getQuestion();
+
+      if (questionData.type === "word") {
+        setQuestion(`Create a sentence using the following word: ${questionData.data}.`);
+      } else if (questionData.type === "article") {
+        const formatted_data = `ARTICLE: \"${questionData.data.title}\"\n\nDESCRIPTION:\n${questionData.data.content}`
+        setQuestion(`${formatted_data}\n\nWhat opinions or main points can you formulate from this description?`);
+      } else {
+        setQuestion(questionData.data);
       }
     };
 
