@@ -7,6 +7,12 @@ import { createPlayers } from "../lib/players"
 import { getQuestion } from "../lib/prompt";
 
 export default function Lobby() {
+  const QUESTIONS = [
+  "Who do you think is better, Messi or Ronaldo?",
+  "Is a hot dog a sandwich?",
+  "What is the best programming language?",
+  "Who is the greatest basketball player of all time?",
+];
   const location = useLocation();
   const [responses, setResponses] = useState(location.state?.responses || []);
   const [votes, setVotes] = useState([]);
@@ -31,7 +37,7 @@ export default function Lobby() {
     setPhase(PHASES.LOADING);
     try {
         const humanAnswer = finalResponse.current?.value || ''; //if user runs out of time or submits something empty
-        const activeModels = players.filter(player => player.state && player.model !== null); // In order to stop generating responses from eliminated agents
+        const activeModels = players.filter(player => player.state && player.model !== null); //to stop generating responses from eliminated agents
         const responses = await getResponses(question, activeModels);
         const index = Math.floor(Math.random() * (responses.length + 1));
         responses.splice(index, 0, { id: 'human', response: humanAnswer });
@@ -51,16 +57,24 @@ export default function Lobby() {
   }
 
   function playerElimination(roundVotes) {
-    const votesPerPlayer = {}
+    const votesPerPlayer = {};
     for (const v of roundVotes) {
-      votesPerPlayer[v.vote] = votesPerPlayer[v.vote] ? votesPerPlayer[v.vote] + 1 : 1;
+      if (v.vote === -1) continue; //ignore failed votes
+      votesPerPlayer[v.vote] = (votesPerPlayer[v.vote] || 0) + 1;
     }
 
-    const idToEliminate = Object.entries(votesPerPlayer).reduce((a, b) => a[1] > b[1] ? a : b)[0]
-    console.log(idToEliminate)
+    if (Object.keys(votesPerPlayer).length === 0) {
+      //no valid votes, skip the round or deal wit it
+      setPhase(PHASES.RESPONDING);
+      return;
+    }
+
+    const idToEliminate = Object.entries(votesPerPlayer)
+      .reduce((a, b) => a[1] > b[1] ? a : b)[0];
 
     if (idToEliminate === "human") {
-      navigate("/you-lose", { state: { responses, players, question } });
+      navigate("/you-lose", { state: { responses, players, question, votes: roundVotes } });
+      return;
     }
 
     setPlayers(prevSet => prevSet.map(player => player.id === idToEliminate ? { ...player, state: false } : player));
@@ -122,7 +136,7 @@ export default function Lobby() {
               <p>{player.name}</p>
               <img className="person-icon" src={icon} alt="Icon of a person."/>
               {(phase === PHASES.VOTING && player.name != userName && player.state) && (
-                <button onClick={() => submitVotes({id: 'human', vote: player.id})}>Vote Out</button>
+                <button onClick={() => submitVotes({id: 'human', vote: player.id, explanation: 'Player vote'})}>Vote Out</button>
               )} 
             </div>
           )
@@ -151,18 +165,12 @@ export default function Lobby() {
 
         {phase === PHASES.INTERM && (
           <div>
-            {responses.map((r, i) => (
-              <p key={i}>{i + 1}. {r.response}</p>
-            ))}
             <button onClick={() => setPhase(PHASES.VOTING)}>Continue to Vote</button>
           </div>
         )}
 
         {phase === PHASES.VOTING && (
           <div>
-            {responses.map((r, i) => (
-              <p key={i}>{i + 1}. {r.response}</p>
-            ))}
             {votes.length > 0 && votes.map((v) => {
               const voter = players.find(p => p.id === v.id);
               const target = players.find(p=> p.id === v.vote);
