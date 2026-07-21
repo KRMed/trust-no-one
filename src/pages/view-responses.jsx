@@ -110,7 +110,7 @@ export default function ViewResponses() {
         <Link to="/you-lose" className="btn">
           Go to Lose Screen
         </Link>
-        <Link to="/" className="btn secondary">
+        <Link to="/start-game" className="btn secondary">
           Back to Start Game
         </Link>
       </div>
