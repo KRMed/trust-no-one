@@ -83,7 +83,6 @@ body {
 }
 
 .action button {
-    background-color: red;
     width: 50%;
     height: 25%;
     transform: translateX(50%);

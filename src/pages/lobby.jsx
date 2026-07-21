@@ -136,7 +136,7 @@ export default function Lobby() {
               <p>{player.name}</p>
               <img className="person-icon" src={icon} alt="Icon of a person."/>
               {(phase === PHASES.VOTING && player.name != userName && player.state) && (
-                <button onClick={() => submitVotes({id: 'human', vote: player.id, explanation: 'Player vote'})}>Vote Out</button>
+                <button className="btn danger" onClick={() => submitVotes({id: 'human', vote: player.id, explanation: 'Player vote'})}>Vote Out</button>
               )} 
             </div>
           )
@@ -155,7 +155,7 @@ export default function Lobby() {
         {phase === PHASES.RESPONDING && (
           <>
             <textarea ref={finalResponse} placeholder="Type your answer..." />
-            <button onClick={submitAnswers}>Submit</button>
+            <button className="btn" onClick={submitAnswers}>Submit</button>
           </>
         )}
 
@@ -165,7 +165,7 @@ export default function Lobby() {
 
         {phase === PHASES.INTERM && (
           <div>
-            <button onClick={() => setPhase(PHASES.VOTING)}>Continue to Vote</button>
+            <button className="btn" onClick={() => setPhase(PHASES.VOTING)}>Continue to Vote</button>
           </div>
         )}
 
