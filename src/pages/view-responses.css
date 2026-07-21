@@ -1,0 +1,28 @@
+body {
+    background-color: #29242D;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+}
+
+.btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn.secondary {
+    background-color: transparent;
+    border: 2px solid white;
+}
+
+.voted-for {
+    font-size: 0.85rem;
+    color: rgb(209, 58, 58);
+}
