@@ -6,14 +6,9 @@ import icon from "/person.png"
 import { createPlayers } from "../lib/players"
 import { getEliminatedId, checkWinner} from "../lib/elimination"
 import { getQuestion } from "../lib/prompt";
+import { supabase } from "../lib/supabase";
 
 export default function Lobby() {
-  const QUESTIONS = [
-  "Who do you think is better, Messi or Ronaldo?",
-  "Is a hot dog a sandwich?",
-  "What is the best programming language?",
-  "Who is the greatest basketball player of all time?",
-];
   const location = useLocation();
   const [responses, setResponses] = useState(location.state?.responses || []);
   const [votes, setVotes] = useState([]);
@@ -23,8 +18,8 @@ export default function Lobby() {
   const [timeLeft, setTimeLeft] = useState(40);
   const [players, setPlayers] = useState(location.state?.players || (() => createPlayers()));
   const navigate = useNavigate();
-
-  const userName = "[USER]";
+  const [userName, setUserName] = useState("User");
+  const [aiVotes, setAiVotes] = useState(location.state?.aiVotes || null);
 
   const PHASES = {
     RESPONDING: "responding",
@@ -51,10 +46,9 @@ export default function Lobby() {
     }
   }
 
-  async function submitVotes(userVote) {
-    const activeModels = players.filter(player => player.state && player.model !== null);
-    const voteResults = await getVotes(question, responses, activeModels);
-    setVotes([...voteResults, userVote]);
+  function submitVotes(userVote) { //not async anymore because we don't have to wait anymore for function call
+    if (!aiVotes) return;
+    setVotes([...aiVotes, userVote]);
   }
 
 function playerElimination(roundVotes) {
@@ -71,9 +65,10 @@ function playerElimination(roundVotes) {
     return;
   }
 
-  setPlayers(prevSet => prevSet.map(player => player.id === idToEliminate ? { ...player, state: false } : player));
-  setQuestion(null);
-  setPhase(PHASES.RESPONDING);
+    setPlayers(prevSet => prevSet.map(player => player.id === idToEliminate ? { ...player, state: false } : player));
+    setAiVotes(null);
+    setQuestion(null);
+    setPhase(PHASES.RESPONDING);
   }
 
   useEffect(() => {
@@ -120,13 +115,44 @@ function playerElimination(roundVotes) {
     loadQuestion();
   }, [question]);
 
+  useEffect(() => {
+    supabase.auth.getUser().then((result) => {
+      if (result.error) {
+        console.error(result.error.message);
+        return;
+      }
+      if (!result.data.user) {
+        console.error("no auth user");
+        return;
+      }
+
+      supabase
+        .from("accounts")
+        .select("username")
+        .eq("id", result.data.user.id)
+        .single()
+        .then((result) => {
+          if (result.error) {
+            console.error(result.error.message);
+            return;
+          }
+          setUserName(result.data.username);
+          setPlayers(prev => prev.map(p => p.id === 'human' ? { ...p, name: result.data.username } : p));
+        });
+    });
+  }, []);
+
   return (
       <div className="lobby">
         {players.map((player, idx) => {
           return (
             <div className={`players ${player.state ? "alive" : "eliminated"}`} id={`player-${idx}`} key={player.name}>
               <p>{player.name}</p>
+              {player.state ? (
               <img className="person-icon" src={icon} alt="Icon of a person."/>
+            ) : (
+              <div className="eliminated-x">✕</div>
+            )}
               {(phase === PHASES.VOTING && player.name != userName && player.state) && (
                 <button className="btn danger" onClick={() => submitVotes({id: 'human', vote: player.id, explanation: 'Player vote'})}>Vote Out</button>
               )} 

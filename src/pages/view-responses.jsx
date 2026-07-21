@@ -1,5 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import icon from "/person.png"
+import "./view-responses.css"
+import { useState, useEffect } from "react";
+import { getVotes } from "../lib/model";
 
 export default function ViewResponses() {
   const location = useLocation();
@@ -7,6 +10,7 @@ export default function ViewResponses() {
   const responses = location.state?.responses || [];
   const playersState = location.state?.players || [];
   const question = location.state?.question || "";
+  const [aiVotes, setAiVotes] = useState(null);
 
   const players = responses.length ? responses.map((r, index) => {
     const pObj = playersState.find(p => p.id === r.id);
@@ -55,6 +59,14 @@ export default function ViewResponses() {
     }
   ];
 
+  useEffect(() => {
+    if (!responses.length || !playersState.length) return;
+    const activeModels = playersState.filter(p => p.state && p.model !== null);
+    getVotes(question, responses, activeModels)
+      .then(setAiVotes)
+      .catch(err => console.error('Failed to prefetch votes:', err));
+  }, []);
+
   return (
     <div className="container">
       <div className="players-container">
@@ -100,16 +112,10 @@ export default function ViewResponses() {
       {/* Navigation demo helper for development / presentation */}
       <div className="navigation-demo-bar">
         {playersState.length > 0 && (
-          <button className="btn" onClick={() => navigate('/lobby', { state: { phase: 'voting', responses, players: playersState, question } })}>
+          <button className="btn" onClick={() => navigate('/lobby', { state: { phase: 'voting', responses, players: playersState, question, aiVotes } })}>
             Continue to Vote
           </button>
         )}
-        <Link to="/you-win" className="btn">
-          Go to Win Screen
-        </Link>
-        <Link to="/you-lose" className="btn">
-          Go to Lose Screen
-        </Link>
         <Link to="/start-game" className="btn secondary">
           Back to Start Game
         </Link>

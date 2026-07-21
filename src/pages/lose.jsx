@@ -102,7 +102,7 @@ export default function Lose() {
       <div className="title lose">YOU LOSE</div>
       
       <div>
-        <Link to="/lobby" state={location.state} className="btn danger">
+        <Link to="/start-game" state={location.state} className="btn danger">
           Play Again
         </Link>
         <button className="btn danger" onClick={() => navigate("/lobby/view-responses-lose", { state: location.state })}>
