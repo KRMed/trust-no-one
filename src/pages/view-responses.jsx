@@ -112,8 +112,14 @@ export default function ViewResponses() {
       {/* Navigation demo helper for development / presentation */}
       <div className="navigation-demo-bar">
         {playersState.length > 0 && (
-          <button className="btn" onClick={() => navigate('/lobby', { state: { phase: 'voting', responses, players: playersState, question, aiVotes } })}>
-            Continue to Vote
+          <button
+            className="btn"
+            disabled={!aiVotes}
+            onClick={() => navigate('/lobby', {
+              state: { phase: 'voting', responses, players: playersState, question, aiVotes }
+            })}
+          >
+            {aiVotes ? 'Continue to Vote' : 'Preparing votes...'}
           </button>
         )}
         <Link to="/start-game" className="btn secondary">
